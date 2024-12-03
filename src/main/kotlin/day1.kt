@@ -12,7 +12,7 @@ fun main() {
     partTwo(setOne, setTwo)
 }
 
-fun partOne(setOne: List<Int>, setTwo: List<Int>) {
+private fun partOne(setOne: List<Int>, setTwo: List<Int>) {
     val sum = setOne.mapIndexed { index, one ->
         val two = setTwo[index]
         abs(one - two)
@@ -21,7 +21,7 @@ fun partOne(setOne: List<Int>, setTwo: List<Int>) {
     println("day 1-1 = $sum")
 }
 
-fun partTwo(setOne: List<Int>, setTwo: List<Int>) {
+private fun partTwo(setOne: List<Int>, setTwo: List<Int>) {
     var indexTwo = 0
 
     val similarity = setOne.mapIndexed { index, one ->
