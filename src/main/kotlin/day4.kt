@@ -40,7 +40,7 @@ private fun partTwo(grid: List<List<Char>>) {
 
             //Count corner occurances
             val counts = corners.values.associate({ it to corners.values.count { corner -> corner == it }})
-            
+
             //Expect 2 M's and 2 S's, where a diagonal is not the same letters (filter out MAM or SAS)
             if(counts['M'] == 2 && counts['S'] == 2 && corners[Direction.UP_LEFT] != corners[Direction.DOWN_RIGHT]) {
                 count++
