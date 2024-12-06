@@ -1,10 +1,11 @@
 import util.loadLines
+import util.measure
 
 fun main() {
     val lines = loadLines("day3.txt")
 
-    partOne(lines)
-    partTwo(lines)
+    measure { partOne(lines) }
+    measure { partTwo(lines) }
 }
 
 private fun partOne(lines: List<String>) {
@@ -25,11 +26,11 @@ private fun partTwo(lines: List<String>) {
     var enabled = true
     val result = lines.sumOf { line ->
         regex.findAll(line).sumOf { match ->
-            when(match.groupValues[1]) {
+            when (match.groupValues[1]) {
                 "don't()" -> enabled = false
                 "do()" -> enabled = true
                 else -> {
-                    if(enabled) return@sumOf match.groups[2]!!.value.toInt() * match.groups[3]!!.value.toInt()
+                    if (enabled) return@sumOf match.groups[2]!!.value.toInt() * match.groups[3]!!.value.toInt()
                 }
             }
             0

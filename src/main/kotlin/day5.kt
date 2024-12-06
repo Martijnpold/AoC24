@@ -1,4 +1,5 @@
 import util.loadLines
+import util.measure
 
 fun main() {
     val lines = loadLines("day5.txt")
@@ -6,8 +7,8 @@ fun main() {
     val rules = lines.subList(0, split).map { it.split("|") }.map { it[0] to it[1] }
     val updates = lines.subList(split + 1, lines.size).map { it.split(",") }
 
-    partOne(updates, rules)
-    partTwo(updates, rules)
+    measure { partOne(updates, rules) }
+    measure { partTwo(updates, rules) }
 }
 
 private fun partOne(updates: List<List<String>>, rules: List<Pair<String, String>>) {

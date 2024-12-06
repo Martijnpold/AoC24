@@ -1,4 +1,5 @@
 package util
 
-class AdventExtensions {
-}
+import model.Grid
+
+fun <T> List<List<T>>.asGrid() = Grid(this)

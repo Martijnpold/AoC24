@@ -1,4 +1,5 @@
 import util.loadLines
+import util.measure
 import kotlin.math.abs
 
 fun main() {
@@ -8,8 +9,8 @@ fun main() {
     val setOne = sets.map { it[0].toInt() }.sorted()
     val setTwo = sets.map { it[1].toInt() }.sorted()
 
-    partOne(setOne, setTwo)
-    partTwo(setOne, setTwo)
+    measure { partOne(setOne, setTwo) }
+    measure { partTwo(setOne, setTwo) }
 }
 
 private fun partOne(setOne: List<Int>, setTwo: List<Int>) {
@@ -27,9 +28,9 @@ private fun partTwo(setOne: List<Int>, setTwo: List<Int>) {
     val similarity = setOne.mapIndexed { index, one ->
         var similarity = 0
         //Skip until numbers are greater or match
-        while(setTwo[indexTwo] < one) indexTwo++
+        while (setTwo[indexTwo] < one) indexTwo++
         //Count instances of same number
-        while(setTwo[indexTwo] == one) {
+        while (setTwo[indexTwo] == one) {
             similarity += one
             indexTwo++
         }

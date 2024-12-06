@@ -1,11 +1,12 @@
 import util.loadLines
+import util.measure
 
 fun main() {
     val lines = loadLines("day2.txt")
     val series = lines.map { line -> line.split(" ").map { it.toInt() } }
 
-    partOne(series)
-    partTwo(series)
+    measure { partOne(series) }
+    measure { partTwo(series) }
 }
 
 private fun partOne(series: List<List<Int>>) {
