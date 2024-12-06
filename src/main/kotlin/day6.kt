@@ -42,7 +42,6 @@ private fun partTwo(grid: Grid<Char>) {
 }
 
 private fun stepsToLeave(grid: Grid<Char>): HashSet<Pair<Point, Direction>> {
-    val steps = mutableListOf<Pair<Point, Direction>>()
     val seen = hashSetOf<Point>()
     val seenDirectionally = hashSetOf<Pair<Point, Direction>>()
 
@@ -64,7 +63,6 @@ private fun stepsToLeave(grid: Grid<Char>): HashSet<Pair<Point, Direction>> {
 
         seen.add(location)
         seenDirectionally.add(location to direction)
-        steps.add(location to direction)
         location = nextLocation
     }
 
