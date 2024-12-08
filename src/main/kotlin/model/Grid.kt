@@ -21,4 +21,12 @@ data class Grid<T>(
         }
         return null
     }
+
+    fun findAllMatching(block: (T) -> Boolean): List<Point> {
+        return list.flatMapIndexed { rowIndex, row ->
+            row.mapIndexed { colIndex, col ->
+                if (block(col)) Point(colIndex, rowIndex) else null
+            }
+        }.filterNotNull()
+    }
 }
