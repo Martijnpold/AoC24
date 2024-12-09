@@ -11,6 +11,7 @@ fun main() {
 private fun partOne(lines: List<String>) {
     val disk = lines.first().readDisk()
 
+    //Pop non-null values starting from the back and append them starting from the front
     var head = 0
     var tail = disk.size
     while (head < tail) {
@@ -30,6 +31,8 @@ private fun partTwo(lines: List<String>) {
     val emptyBlocks = mutableListOf<Pair<Int, Int>>()
     val filledBlocks = mutableListOf<Pair<Int, Int>>()
 
+    //Build a list of empty blocks from front to back,
+    //where key is the index and value is the size of the block
     var head = 0
     while (head != -1) {
         head = disk.findNext(head, { it == null })
@@ -39,6 +42,8 @@ private fun partTwo(lines: List<String>) {
         head = tail
     }
 
+    //Build a list of full blocks from back to front
+    //where key is the index and value is the size of the block
     head = disk.size
     while (head != -1) {
         if (head in disk.indices && disk[head] != null) head += 1
@@ -50,6 +55,10 @@ private fun partTwo(lines: List<String>) {
         head = tail
     }
 
+    //Step through the full blocks (ordered back to front)
+    //Find an empty block that is equal or bigger (front to back)
+    //Insert full block into empty block
+    //Update or pop empty block to reflect the remaining space
     filledBlocks.forEach { (start, size) ->
         val toPut = emptyBlocks.firstOrNull { (emptyIndex, emptySize) ->
             emptySize >= size && emptyIndex < start
@@ -60,7 +69,13 @@ private fun partTwo(lines: List<String>) {
 
         disk.setBlock(toPut.first, size, disk[start])
         disk.setBlock(start, size, null)
-        emptyBlocks[putIndex] = toPut.first + size to toPut.second - size
+
+        //If block fills up entire space remove, else update
+        if(toPut.second == size) {
+            emptyBlocks.removeAt(putIndex)
+        } else {
+            emptyBlocks[putIndex] = toPut.first + size to toPut.second - size
+        }
     }
 
     println("day 9-2 = ${disk.checkSum()}")
