@@ -10,6 +10,9 @@ fun loadLines(file: String) =
 fun loadGrid(file: String) =
     loadLines(file).map { it.toCharArray().toList() }.asGrid()
 
+fun loadIntGrid(file: String) =
+    loadLines(file).map { it.toCharArray().toList().map { "$it".toInt() } }.asGrid()
+
 fun measure(block: () -> Unit) {
     val nano = measureNanoTime(block)
     println("took ${nano}ns (or ${nano / 1000000.0}ms)")
