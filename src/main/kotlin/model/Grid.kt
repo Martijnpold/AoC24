@@ -22,6 +22,16 @@ data class Grid<T>(
         return null
     }
 
+    fun findFirstMatching(block: (Point, T) -> Boolean): Point? {
+        list.forEachIndexed { rowIndex, row ->
+            row.forEachIndexed { colIndex, col ->
+                val point = Point(colIndex, rowIndex)
+                if (block(point, col)) return point
+            }
+        }
+        return null
+    }
+
     fun findAllMatching(block: (T) -> Boolean): List<Point> {
         return list.flatMapIndexed { rowIndex, row ->
             row.mapIndexed { colIndex, col ->

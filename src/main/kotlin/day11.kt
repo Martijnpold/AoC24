@@ -1,4 +1,3 @@
-import util.hasIndex
 import util.loadLines
 import util.measure
 
