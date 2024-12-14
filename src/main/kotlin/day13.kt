@@ -1,5 +1,7 @@
 import util.loadLines
 import util.measure
+import java.math.BigDecimal
+import java.math.BigInteger
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
@@ -32,14 +34,6 @@ fun main() {
 }
 
 private fun partOne(machines: List<ClawMachine>) {
-//    val sum = machines.mapNotNull {
-//        val result = solveForCoefficients(it.buttons[0], it.buttons[1], it.prize)
-//
-//        result
-//    }.sumOf { it.x + it.y }
-//
-//    println("day 13-1 = $sum")
-
     var sum = machines.mapNotNull {
         calculateNaive(it.prize, it.buttons[0], it.buttons[1])
     }.sum()
@@ -49,7 +43,8 @@ private fun partOne(machines: List<ClawMachine>) {
 private fun partTwo(machines: List<ClawMachine>) {
     var sum = machines.mapNotNull {
         val offset = LongPoint(10000000000000, 10000000000000)
-        calculateNaive(it.prize + offset, it.buttons[0], it.buttons[1], 9999999999999)
+        val cost = solveForCoefficients(it.buttons[0], it.buttons[1] * 3, it.prize + offset, Long.MAX_VALUE) ?: return@mapNotNull null
+        cost.first * 3 + cost.second
     }.sum()
     println("day 13-1 = $sum")
 }
@@ -71,49 +66,20 @@ private fun calculateNaive(goal: LongPoint, buttonA: LongPoint, buttonB: LongPoi
     return currentCost
 }
 
-private fun calculateWithEstimate(goal: LongPoint, buttonA: LongPoint, buttonB: LongPoint) {
-    val distanceAPerToken = buttonA.distance() / 3
-    val distanceBPerToken = buttonB.distance()
-
-    val initButton = if (distanceAPerToken > distanceBPerToken) buttonA else buttonB
-    val secondaryButton = if (distanceAPerToken > distanceBPerToken) buttonB else buttonA
-
-    val estimateAxisPresses = maxEstimatePresses(goal, initButton)
-    val initialPresses = max(estimateAxisPresses.x, estimateAxisPresses.y).coerceAtMost(100)
-
-    var bestCost: Int? = null
-    repeat(initialPresses.toInt()) { press ->
-        val pressesA = initialPresses - press
-        val leftover = goal - initButton * pressesA
-        val pressesB = maxEstimatePresses(leftover, secondaryButton)
-        if (pressesB.x == pressesB.y) println("Found $pressesA, ${pressesB.x}")
-    }
-}
-
 private fun maxEstimatePresses(goal: LongPoint, button: LongPoint) =
     LongPoint(
         ceil(goal.x.toFloat() / button.x.toFloat()).toLong(),
         ceil(goal.y.toFloat() / button.y.toFloat()).toLong(),
     )
 
-private fun pressButtons(goal: LongPoint, buttons: List<LongPoint>, current: LongPoint = LongPoint(0, 0), presses: Int = 0): Int? {
-    if (presses > 100) return null
-    if (current.x > goal.x || current.y > goal.y) return null
-    if (goal == current) return presses
-
-    return buttons.mapNotNull {
-        pressButtons(goal, buttons, current + it, presses + 1)
-    }.minOrNull()
-}
-
 private data class ClawMachine(
     val prize: LongPoint,
     val buttons: List<LongPoint>,
 )
 
-private fun solveForCoefficients(v1: LongPoint, v2: LongPoint, v3: LongPoint): LongPoint? {
+private fun solveForCoefficients(v1: LongPoint, v2: LongPoint, v3: LongPoint, maxPresses: Long = 100): Pair<Long, Long>? {
     // Calculate the determinant of the matrix
-    val determinant = v1.x * v2.y - v2.x * v1.y
+    val determinant = (v1.x * v2.y - v2.x * v1.y).toDouble()
 
     if (abs(determinant) < 1e-10) {
         // Matrix is singular, no unique solution
@@ -122,10 +88,12 @@ private fun solveForCoefficients(v1: LongPoint, v2: LongPoint, v3: LongPoint): L
 
     // Solve using Cramer's rule
     val aCoefficient = (v3.x * v2.y - v2.x * v3.y) / determinant
-    val bCoefficient = (v1.x * v3.y - v3.x * v1.y) / determinant
+    val bCoefficient = (v1.x * v3.y - v3.x * v1.y) / determinant * 3
 
-    if (aCoefficient > 100 || bCoefficient > 100) return null
-    return LongPoint(aCoefficient, bCoefficient)
+    if (aCoefficient.toLong() - aCoefficient != 0.0) return null
+    if (bCoefficient.toLong() - bCoefficient != 0.0) return null
+    if (aCoefficient > maxPresses || bCoefficient > maxPresses) return null
+    return Pair(aCoefficient.toLong(), bCoefficient.toLong())
 }
 
 private data class LongPoint(val x: Long, val y: Long) {
