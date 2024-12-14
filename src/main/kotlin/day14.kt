@@ -51,7 +51,7 @@ private fun partTwo(robots: List<Robot>) {
 
     grid.print()
 
-    println("day 14-1 = $answer")
+    println("day 14-2 = $answer")
 }
 
 private class Robot(

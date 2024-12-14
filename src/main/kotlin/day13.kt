@@ -46,7 +46,7 @@ private fun partTwo(machines: List<ClawMachine>) {
         val cost = solveForCoefficients(it.buttons[0], it.buttons[1] * 3, it.prize + offset, Long.MAX_VALUE) ?: return@mapNotNull null
         cost.first * 3 + cost.second
     }.sum()
-    println("day 13-1 = $sum")
+    println("day 13-2 = $sum")
 }
 
 private fun calculateNaive(goal: LongPoint, buttonA: LongPoint, buttonB: LongPoint, maxPresses: Long = 100): Long? {
