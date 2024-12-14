@@ -9,17 +9,17 @@ import kotlin.math.sqrt
 fun main() {
     val machines = mutableListOf<ClawMachine>()
 
-    var buttons = mutableListOf<Point>()
+    var buttons = mutableListOf<LongPoint>()
     loadLines("day13.txt").forEach { line ->
         if (line.startsWith("Button")) {
             """X\+(\d+), Y\+(\d+)""".toRegex().find(line)!!.let { match ->
-                val point = Point(match.groupValues[1].toLong(), match.groupValues[2].toLong())
+                val point = LongPoint(match.groupValues[1].toLong(), match.groupValues[2].toLong())
                 buttons.add(point)
             }
         }
         if (line.startsWith("Prize")) {
             """X=(\d+), Y=(\d+)""".toRegex().find(line)!!.let { match ->
-                val point = Point(match.groupValues[1].toLong(), match.groupValues[2].toLong())
+                val point = LongPoint(match.groupValues[1].toLong(), match.groupValues[2].toLong())
                 machines.add(ClawMachine(point, buttons))
             }
             buttons = mutableListOf()
@@ -48,14 +48,14 @@ private fun partOne(machines: List<ClawMachine>) {
 
 private fun partTwo(machines: List<ClawMachine>) {
     var sum = machines.mapNotNull {
-        val offset = Point(10000000000000, 10000000000000)
+        val offset = LongPoint(10000000000000, 10000000000000)
         calculateNaive(it.prize + offset, it.buttons[0], it.buttons[1], 9999999999999)
     }.sum()
     println("day 13-1 = $sum")
 }
 
-private fun calculateNaive(goal: Point, buttonA: Point, buttonB: Point, maxPresses: Long = 100): Long? {
-    val zero = Point(0, 0)
+private fun calculateNaive(goal: LongPoint, buttonA: LongPoint, buttonB: LongPoint, maxPresses: Long = 100): Long? {
+    val zero = LongPoint(0, 0)
     var currentCost: Long? = null
 
     val maxPressA = maxEstimatePresses(goal, buttonA).let { max(it.x, it.y) }.coerceAtMost(maxPresses)
@@ -71,7 +71,7 @@ private fun calculateNaive(goal: Point, buttonA: Point, buttonB: Point, maxPress
     return currentCost
 }
 
-private fun calculateWithEstimate(goal: Point, buttonA: Point, buttonB: Point) {
+private fun calculateWithEstimate(goal: LongPoint, buttonA: LongPoint, buttonB: LongPoint) {
     val distanceAPerToken = buttonA.distance() / 3
     val distanceBPerToken = buttonB.distance()
 
@@ -90,13 +90,13 @@ private fun calculateWithEstimate(goal: Point, buttonA: Point, buttonB: Point) {
     }
 }
 
-private fun maxEstimatePresses(goal: Point, button: Point) =
-    Point(
+private fun maxEstimatePresses(goal: LongPoint, button: LongPoint) =
+    LongPoint(
         ceil(goal.x.toFloat() / button.x.toFloat()).toLong(),
         ceil(goal.y.toFloat() / button.y.toFloat()).toLong(),
     )
 
-private fun pressButtons(goal: Point, buttons: List<Point>, current: Point = Point(0, 0), presses: Int = 0): Int? {
+private fun pressButtons(goal: LongPoint, buttons: List<LongPoint>, current: LongPoint = LongPoint(0, 0), presses: Int = 0): Int? {
     if (presses > 100) return null
     if (current.x > goal.x || current.y > goal.y) return null
     if (goal == current) return presses
@@ -107,11 +107,11 @@ private fun pressButtons(goal: Point, buttons: List<Point>, current: Point = Poi
 }
 
 private data class ClawMachine(
-    val prize: Point,
-    val buttons: List<Point>,
+    val prize: LongPoint,
+    val buttons: List<LongPoint>,
 )
 
-fun solveForCoefficients(v1: Point, v2: Point, v3: Point): Point? {
+private fun solveForCoefficients(v1: LongPoint, v2: LongPoint, v3: LongPoint): LongPoint? {
     // Calculate the determinant of the matrix
     val determinant = v1.x * v2.y - v2.x * v1.y
 
@@ -125,15 +125,15 @@ fun solveForCoefficients(v1: Point, v2: Point, v3: Point): Point? {
     val bCoefficient = (v1.x * v3.y - v3.x * v1.y) / determinant
 
     if (aCoefficient > 100 || bCoefficient > 100) return null
-    return Point(aCoefficient, bCoefficient)
+    return LongPoint(aCoefficient, bCoefficient)
 }
 
-data class Point(val x: Long, val y: Long) {
-    operator fun plus(other: Point) = Point(x + other.x, y + other.y)
+private data class LongPoint(val x: Long, val y: Long) {
+    operator fun plus(other: LongPoint) = LongPoint(x + other.x, y + other.y)
 
-    operator fun minus(other: Point) = Point(x - other.x, y - other.y)
+    operator fun minus(other: LongPoint) = LongPoint(x - other.x, y - other.y)
 
-    operator fun times(other: Long) = Point(x * other, y * other)
+    operator fun times(other: Long) = LongPoint(x * other, y * other)
 
     fun distance() = sqrt((x * x + y * y).toFloat())
 }

@@ -1,12 +1,23 @@
 package model
 
+import util.asGrid
+import java.io.FileWriter
+
 data class Grid<T>(
-    val list: List<List<T>>,
+    val list: MutableList<MutableList<T>>,
 ) {
     fun isInBounds(point: Point) = isInBounds(point.x, point.y)
 
     fun isInBounds(x: Int, y: Int) =
         y >= 0 && y < list.size && x >= 0 && x < list[y].size
+
+    fun set(point: Point, value: T) = set(point.x, point.y, value)
+
+    fun set(x: Int, y: Int, value: T) {
+        if (isInBounds(x, y)) {
+            list[y][x] = value
+        }
+    }
 
     fun at(point: Point) = at(point.x, point.y)
 
@@ -39,4 +50,24 @@ data class Grid<T>(
             }
         }.filterNotNull()
     }
+
+    fun print() {
+        list.forEach {
+            println(it.joinToString(""))
+        }
+    }
+
+    fun write(fileWriter: FileWriter) {
+        list.forEach {
+            fileWriter.write(it.joinToString(""))
+            fileWriter.write("\n")
+        }
+    }
 }
+
+fun <T> makeGrid(width: Int, height: Int, init: (Point) -> T): Grid<T> =
+    List(width) { y ->
+        List(height) { x ->
+            init(Point(x, y))
+        }
+    }.asGrid()

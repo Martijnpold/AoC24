@@ -2,7 +2,7 @@ package util
 
 import model.Grid
 
-fun <T> List<List<T>>.asGrid() = Grid(this)
+fun <T> Collection<Collection<T>>.asGrid() = Grid(this.map { it.toMutableList() }.toMutableList())
 
-fun <T> List<T>.hasIndex(index: Int) =
+fun <T> Collection<T>.hasIndex(index: Int) =
     index in 0..<size
