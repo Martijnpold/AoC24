@@ -1,11 +1,7 @@
-import model.Grid
 import model.Point
 import model.makeGrid
 import util.loadLines
 import util.measure
-import java.io.File
-import java.io.FileWriter
-import java.nio.charset.Charset
 import kotlin.math.abs
 
 fun main() {

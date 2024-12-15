@@ -57,17 +57,27 @@ data class Grid<T>(
         }
     }
 
+    fun print(block: (T) -> String) {
+        list.forEach {
+            println(it.joinToString("", transform = block))
+        }
+    }
+
     fun write(fileWriter: FileWriter) {
         list.forEach {
             fileWriter.write(it.joinToString(""))
             fileWriter.write("\n")
         }
     }
+
+    fun width() = list[0].size
+
+    fun height() = list.size
 }
 
 fun <T> makeGrid(width: Int, height: Int, init: (Point) -> T): Grid<T> =
-    List(width) { y ->
-        List(height) { x ->
+    List(height) { y ->
+        List(width) { x ->
             init(Point(x, y))
         }
     }.asGrid()
