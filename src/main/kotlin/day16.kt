@@ -23,18 +23,28 @@ private fun partOne(grid: Grid<Char>) {
 }
 
 private fun partTwo(grid: Grid<Char>) {
+    val start = grid.find('S')!!
+    val end = grid.find('E')!!
 
-    println("day 16-2 = 0")
+    val path = aStar(grid, Location(start, Direction.RIGHT), end)
+    val sum = path.flatMap { it.path }.map { it.point }.distinct().size
+
+    println("day 16-2 = $sum")
 }
 
-private fun reconstructPath(cameFrom: Map<Location, Location>, end: Location): Route {
-    var current = end
-    val totalPath = mutableListOf(end)
-    while (cameFrom.containsKey(current)) {
-        current = cameFrom[current]!!
-        totalPath.addFirst(current)
+private fun reconstructPaths(
+    cameFrom: Map<Location, List<Location>>,
+    current: Location
+): List<Route> {
+    if (!cameFrom.containsKey(current)) return listOf(Route(listOf(current)))
+
+    val paths = mutableListOf<Route>()
+    for (predecessor in cameFrom[current]!!) {
+        for (path in reconstructPaths(cameFrom, predecessor)) {
+            paths.add(Route(listOf(current) + path.path))
+        }
     }
-    return Route(totalPath)
+    return paths
 }
 
 // A* finds a path from start to goal.
@@ -42,56 +52,40 @@ private fun reconstructPath(cameFrom: Map<Location, Location>, end: Location): R
 private fun aStar(grid: Grid<Char>, start: Location, goal: Point): List<Route> {
     val routes = mutableListOf<Route>()
     var routeCost: Int? = null
-    // The set of discovered nodes that may need to be (re-)expanded.
-    // Initially, only the start node is known.
-    // This is usually implemented as a min-heap or priority queue rather than a hash-set.
     val openSet = mutableListOf(start)
-
-    // For node n, cameFrom[n] is the node immediately preceding it on the cheapest path from the start
-    // to n currently known.
-    val cameFrom = mutableMapOf<Location, Location>()
-
-    // For node n, gScore[n] is the currently known cost of the cheapest path from start to n.
+    val cameFrom = mutableMapOf<Location, MutableList<Location>>()
     val gScore = mutableMapOf<Location, Double>()
     gScore[start] = 0.0
-
-    // For node n, fScore[n] := gScore[n] + h(n). fScore[n] represents our current best guess as to
-    // how cheap a path could be from start to finish if it goes through n.
     val fScore = mutableMapOf<Location, Double>()
     fScore[start] = heuristic(start, goal)
 
     while (openSet.isNotEmpty()) {
-        // This operation can occur in O(Log(N)) time if openSet is a min-heap or a priority queue
-        val current = openSet.minBy { fScore[it] ?: 99999999999.0 }
-        fScore.remove(current)
+        val current = openSet.minBy { fScore[it] ?: Double.MAX_VALUE }
         openSet.remove(current)
 
         if (current.point == goal) {
-            val route = reconstructPath(cameFrom, current)
-            if (routeCost == null) routeCost = route.getCost()
-            if (route.getCost() > routeCost) return routes
-            routes.add(route)
+            if (routeCost == null) routeCost = gScore[current]?.toInt()
+            if (gScore[current]?.toInt() == routeCost) {
+                routes.addAll(reconstructPaths(cameFrom, current))
+            }
             continue
         }
 
         current.getNeighbors().forEach { neighbor ->
             if (grid.at(neighbor.point) == '#') return@forEach
-            // d(current,neighbor) is the weight of the edge from current to neighbor
-            // tentative_gScore is the distance from start to the neighbor through current
-            val tentative = (gScore[current] ?: 9999999999.0) + moveCost(current, neighbor)
+            val tentative = (gScore[current] ?: Double.MAX_VALUE) + moveCost(current, neighbor)
 
-            if (tentative <= (gScore[neighbor] ?: 9999999999.0)) {
-                // This path to neighbor is better than any previous one. Record it!
-                cameFrom[neighbor] = current
+            if (tentative < (gScore[neighbor] ?: Double.MAX_VALUE)) {
                 gScore[neighbor] = tentative
-                fScore[neighbor] = tentative + heuristic(current, neighbor.point)
-                if (!openSet.contains(neighbor))
-                    openSet.add(neighbor)
+                fScore[neighbor] = tentative + heuristic(current, goal)
+                openSet.add(neighbor)
+                cameFrom[neighbor] = mutableListOf(current)
+            } else if (tentative == (gScore[neighbor] ?: Double.MAX_VALUE)) {
+                cameFrom.computeIfAbsent(neighbor) { mutableListOf() }.add(current)
             }
         }
-
-        // Open set is empty but goal was never reached
     }
+
     return routes
 }
 
