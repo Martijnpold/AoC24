@@ -7,7 +7,7 @@ fun main() {
     val lines = loadLines("day17.txt")
 
     val registers = lines.subList(0, 3).map {
-        """Register .: (\d+)""".toRegex().find(it)!!.groupValues[1].toInt()
+        """Register .: (\d+)""".toRegex().find(it)!!.groupValues[1].toLong()
     }
     val program = lines[4].split(": ")[1].split(",")
         .map { it.toInt() }
@@ -24,31 +24,22 @@ private fun partOne(computer: Computer, program: List<Int>) {
 private fun partTwo(computer: Computer, program: List<Int>) {
     val toFind = program.joinToString(",")
 
-    val solution = findSolution(computer, program, 0, 16, toFind)
+    val solution = findSolution2(computer, program, 0, toFind)
 
     println("day 17-2 = $solution")
 }
 
-private fun findSolution(computer: Computer, program: List<Int>, offset: Int, digit: Int, toFind: String): Int? {
-    if (digit < 0) return null
-    val increment = 8.0.pow(digit).toInt()
-    val charIndex = abs(digit - 16) * 2
+private fun findSolution2(computer: Computer, program: List<Int>, input: Long, toFind: String, digit: Int = 0): Long? {
+    if (digit >= 16) return null
 
-    return IntRange(0, 8).mapNotNull {
-        val value = offset + increment * it
-        val newComputer = Computer(computer.registers)
-        newComputer.write(REG_A, value)
-
-        val output = newComputer.runProgram(program)
-        if (output == toFind) return@mapNotNull value
-
-        val paddedOutput = output.padEnd(32, 'x')
-        if (paddedOutput[charIndex] == toFind[charIndex]) {
-            return@mapNotNull findSolution(computer, program, value, digit - 1, toFind)
-        }
-
-        return@mapNotNull null
-    }.firstOrNull()
+    return LongRange(0, 8).mapNotNull { offset ->
+        val testValue = input * 8L + offset
+        val output = Computer(computer.registers.toMutableList().also { it[0] = testValue }).runProgram(program)
+        if (output == toFind) return@mapNotNull testValue
+        if (toFind[toFind.length - 1 - digit * 2] == output[0]) {
+            return@mapNotNull findSolution2(computer, program, testValue, toFind, digit + 1)
+        } else null
+    }.minOrNull()
 }
 
 private const val REG_A = 0
@@ -56,41 +47,41 @@ private const val REG_B = 1
 private const val REG_C = 2
 
 private class Computer(
-    val registers: MutableList<Int>,
+    val registers: MutableList<Long>,
     var pointer: Int = 0,
-    val output: MutableList<Int> = mutableListOf(),
+    val output: MutableList<Long> = mutableListOf(),
 ) {
-    fun read(register: Int) = registers[register]
+    fun read(register: Int) = registers[register.toInt()]
 
-    fun write(register: Int, value: Int) {
+    fun write(register: Int, value: Long) {
         registers[register] = value
     }
 
-    fun getComboOperand(operand: Int) = when (operand) {
-        0, 1, 2, 3 -> operand
+    fun getComboOperand(operand: Int): Long = when (operand) {
+        0, 1, 2, 3 -> operand.toLong()
         4, 5, 6 -> read(operand - 4)
-        else -> -1
+        else -> -1L
     }
 
     fun execute(opcode: Int, operand: Int) {
         val combo = getComboOperand(operand)
         when (opcode) {
             //ADV
-            0 -> write(REG_A, (read(REG_A) / 2.0.pow(combo)).toInt())
+            0 -> write(REG_A, (read(REG_A) / 2.0.pow(combo.toDouble())).toLong())
             //BXL
-            1 -> write(REG_B, read(REG_B) xor operand)
+            1 -> write(REG_B, read(REG_B) xor operand.toLong())
             //BST
-            2 -> write(REG_B, combo % 8)
+            2 -> write(REG_B, combo % 8L)
             //JNZ
-            3 -> if (read(REG_A) != 0) pointer = operand - 1
+            3 -> if (read(REG_A) != 0L) pointer = operand - 1
             //BXC
             4 -> write(REG_B, read(REG_B) xor read(REG_C))
             //OUT
             5 -> output.add(combo % 8)
             //BDV
-            6 -> write(REG_B, (read(REG_A) / 2.0.pow(combo)).toInt())
+            6 -> write(REG_B, (read(REG_A) / 2.0.pow(combo.toDouble())).toLong())
             //CDV
-            7 -> write(REG_C, (read(REG_A) / 2.0.pow(combo)).toInt())
+            7 -> write(REG_C, (read(REG_A) / 2.0.pow(combo.toDouble())).toLong())
         }
     }
 
